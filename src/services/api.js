@@ -55,6 +55,32 @@ export const deleteUser = async (dataObject, token) => {
   }
 };
 
+export const signUpUser = async (dataObject, token) => {
+  try {
+    const response = await axios.post(`${API_URL}/signup`, dataObject, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Adding the authorization header
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw error;
+  }
+};
+
+export const getDefaultToken = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/token`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching token:", error);
+    throw error;
+  }
+};
+
 export const getUserToken = async (identifier) => {
   try {
     const isEmail = identifier.includes("@");

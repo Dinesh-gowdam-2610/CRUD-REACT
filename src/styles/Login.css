@@ -1,14 +1,72 @@
-body {
+/* Global Styles */
+body,
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: "Poppins", sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-  font-family: "Poppins", sans-serif;
-  margin: 0;
-  color: #ffffff; /* Ensure text is always visible */
+  overflow: hidden;
+  position: relative;
 }
 
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: 400% 400%;
+  animation: gradientAnimation 10s ease infinite;
+  z-index: -2;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(-45deg, #1e3c72, #2a5298, #ff6b6b, #ffcc00);
+  background-size: 300% 300%;
+  animation: gradientBG 10s ease infinite;
+  filter: blur(50px); /* Soft glowing effect */
+  opacity: 0.8; /* Subtle visibility */
+  z-index: -1;
+}
+
+/* Animation for the moving gradient */
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Background Animation */
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Login Container */
 .login-container {
   width: 360px;
   padding: 40px;
@@ -19,27 +77,53 @@ body {
   border-radius: 20px;
   text-align: center;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  z-index: 2;
 }
 
+/* Glowing Effect */
 .login-container:hover {
   transform: translateY(-5px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
+/* Moving Glow Animation */
+.login-container::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(90deg, #ddd7d7, #9d8e54, #00c6ff, #0072ff);
+  background-size: 300% 300%;
+  z-index: -1;
+  filter: blur(8px);
+  border-radius: 20px;
+  animation: glowMove 6s linear infinite;
+}
+
+@keyframes glowMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 .login-container h1 {
   margin-bottom: 20px;
   font-size: 28px;
-  color: #0d0c0c; /* Brighter text for better contrast */
+  color: rgb(49, 45, 45)c0c;
   font-weight: 600;
   letter-spacing: -0.5px;
 }
 
-.login-container form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
+/* Input Fields */
 .login-container input {
   width: 100%;
   padding: 14px;
@@ -48,21 +132,18 @@ body {
   border-radius: 10px;
   font-size: 16px;
   background: rgba(255, 255, 255, 0.2);
-  color: #000000; /* Ensure input text is visible */
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  color: #000000;
+  transition: all 0.3s ease;
   outline: none;
 }
 
-.login-container input::placeholder {
-  color: rgba(10, 8, 8, 0.8); /* More visible placeholder */
-  font-size: 14px;
-}
-
+/* Glowing Input Focus */
 .login-container input:focus {
   border-color: #00ffcc;
   box-shadow: 0 0 12px rgba(0, 255, 204, 0.6);
 }
 
+/* Buttons */
 .login-container button {
   width: 100%;
   padding: 14px;
@@ -76,15 +157,18 @@ body {
   transition: all 0.3s ease;
 }
 
+/* Vibrant Hover Effect */
 .login-container button:hover {
   background: linear-gradient(90deg, #0072ff, #00c6ff);
   transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.6);
 }
 
 .login-container button:active {
   transform: scale(0.98);
 }
 
+/* Error Message */
 .error-message {
   color: #ff4b4b;
   background: rgba(255, 77, 77, 0.2);
@@ -96,6 +180,7 @@ body {
   animation: shake 0.5s ease-in-out;
 }
 
+/* Shake Animation */
 @keyframes shake {
   0%,
   100% {
@@ -112,23 +197,8 @@ body {
   }
 }
 
-.login-container p {
-  color: #050202;
-  margin-top: 15px;
-}
-
-.login-container a {
-  color: #00ffcc;
-  text-decoration: none;
-  font-weight: bold;
-  transition: color 0.3s ease;
-}
-
-.login-container a:hover {
-  color: #0b0c0c;
-}
-
-@media (max-width: 400px) {
+/* Responsive Design */
+@media (max-width: 480px) {
   .login-container {
     width: 90%;
     padding: 30px;

@@ -15,13 +15,12 @@ html {
   justify-content: center;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
   color: #ffffff;
 }
 
 .user-list {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 1rem;
   padding: 1rem;
   list-style: none;
@@ -44,6 +43,7 @@ html {
 
 .user-card:hover {
   transform: translateY(-5px);
+  background: linear-gradient(190deg, #cfcdcd, #d4d7d7);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
@@ -82,6 +82,7 @@ html {
   gap: 0.75rem;
   margin-top: auto;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .user-actions button {
@@ -170,7 +171,7 @@ html {
     transform: translateX(-8px);
   }
 }
-
+/* 
 @keyframes heartbeat {
   0% {
     transform: scale(1);
@@ -192,7 +193,7 @@ html {
     transform: scale(1);
     box-shadow: 0 0 10px #ffffff;
   }
-}
+} */
 
 /* Responsive Design */
 @media (max-width: 1024px) {

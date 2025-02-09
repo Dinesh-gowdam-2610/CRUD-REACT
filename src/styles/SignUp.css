@@ -1,0 +1,201 @@
+/* Global Styles */
+body,
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  /* transition: background-color 0.5s ease; */
+  background: linear-gradient(-45deg, #40b15b, #2a5298, #9043d3, #ffcc00);
+}
+
+/* Fade-In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Neon Glow Animation */
+@keyframes neonGlow {
+  0% {
+    box-shadow: 0 0 5px rgba(0, 255, 204, 0.2), 0 0 10px rgba(0, 255, 204, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.8), 0 0 40px rgba(0, 255, 204, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(0, 255, 204, 0.2), 0 0 10px rgba(0, 255, 204, 0.2);
+  }
+}
+
+/* Glowing Background Effect */
+@keyframes glowAnimation {
+  0% {
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+  }
+}
+
+/* Sign-Up Form Container */
+.signup-container {
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 40px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  animation: fadeIn 0.6s ease-out, neonGlow 3s ease-in-out infinite alternate;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover Effect for the Container */
+.signup-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Form Heading */
+.signup-container h1 {
+  font-size: 2rem;
+  color: #0f0d0d;
+  margin-bottom: 20px;
+}
+
+/* Form Layout */
+.signup-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Input Fields */
+.signup-container input {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #120c0c;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Password Container */
+.password-container {
+  position: relative;
+}
+/* Password Toggle Icon - Enhanced */
+.password-toggle-icon {
+  position: absolute;
+  top: 50%;
+  right: -15px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #888;
+  font-size: 1.2rem;
+  user-select: none;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.password-toggle-icon:hover {
+  color: #00ffcc;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* Input Focus Effect */
+.signup-container input:focus {
+  border-color: #00ffcc;
+  box-shadow: 0 0 10px rgba(0, 255, 204, 0.8);
+}
+
+/* Sign-Up Button with Neon Glow */
+.signup-container button {
+  padding: 12px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  background: linear-gradient(190deg, #667490, #0072ff);
+  color: #fff;
+  cursor: pointer;
+  width: 30%;
+  max-width: 300px;
+  margin: 0 auto;
+  animation: neonGlow 2s ease-in-out infinite alternate;
+}
+
+.signup-container button:hover {
+  background: linear-gradient(90deg, #0072ff, #00c6ff);
+  transform: scale(1.05);
+}
+
+/* Text and Link Styles */
+.signup-container p {
+  font-size: 2rem;
+  color: #160e0e;
+  margin-top: 15px;
+}
+
+.signup-container a {
+  color: #00ffcc;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.signup-container a:hover {
+  text-decoration: underline;
+}
+
+/* Error Message Styling */
+.error-message {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.2);
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+  .signup-container {
+    padding: 30px;
+  }
+  .signup-container h1 {
+    font-size: 1.8rem;
+  }
+  .signup-container input {
+    font-size: 0.95rem;
+  }
+  .password-container input {
+    padding: 10px 40px 10px 10px;
+  }
+  .password-toggle-icon {
+    font-size: 16px;
+    right: 12px;
+  }
+  .signup-container button {
+    font-size: 0.9rem;
+  }
+}
