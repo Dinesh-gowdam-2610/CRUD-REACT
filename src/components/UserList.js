@@ -1,47 +1,53 @@
 import React, { useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { getAllUsers, updateUsers, deleteUser } from "../services/api";
-import EditModal from "../modals/EditModal";
-import DeleteModal from "../modals/DeleteModal";
-
+import {
+  Layout,
+  Card,
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  message,
+  Row,
+  Col,
+  Spin,
+} from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import "../styles/UserList.css";
+
+const { Header, Content } = Layout;
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [editedUser, setEditedUser] = useState({
-    username: "",
-    email: "",
-    phoneNumber: "",
-  });
+  const [form] = Form.useForm();
   const history = useHistory();
   const location = useLocation();
-  const token = location.state?.token || localStorage.getItem("token"); // Retrieve token from location state
+  const token = location.state?.token || localStorage.getItem("token");
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         if (!token) {
           setError("No token found. Please log in.");
-          history.push("/login"); // Redirect to login page
+          history.push("/login");
           return;
         }
-        const data = await getAllUsers(token); // Pass token to getAllUsers
+        const data = await getAllUsers(token);
         setUsers(data);
-
-        // Set a timeout to clear the token after 5 minutes (300000 milliseconds)
+        setDataLoaded(true);
         const timeoutId = setTimeout(() => {
           setError("Session expired. Please log in again.");
-          history.push("/login"); // Redirect to login page
-        }, 300000);
-
-        // Clear the timeout if the component is unmounted
+          history.push("/login");
+        }, 3000000);
         return () => clearTimeout(timeoutId);
-      } catch (error) {
-        console.error("Error fetching users:", error);
+      } catch (err) {
+        console.error("Error fetching users:", err);
         setError("Failed to fetch users. Please try again later.");
       }
     };
@@ -51,154 +57,180 @@ const UserList = () => {
 
   const handleEditClick = (user) => {
     setSelectedUser(user);
-    const modfiedUser = {
+    form.setFieldsValue({
       username: user.username,
       email: user.email,
       phoneNumber: user.phoneNumber,
-    };
-
-    setEditedUser(modfiedUser);
-    setIsModalOpen(true);
+    });
+    setIsEditModalVisible(true);
   };
 
-  const handleSaveClick = async () => {
+  const handleEditModalOk = async () => {
     try {
-      // Call the updateUsers API with the edited user details and token
+      const values = await form.validateFields();
       await updateUsers(
         {
-          userId: selectedUser._id, // Ensure the correct user ID is being used
-          username: editedUser.username,
-          email: editedUser.email,
-          phoneNumber: editedUser.phoneNumber,
+          userId: selectedUser._id,
+          username: values.username,
+          email: values.email,
+          phoneNumber: values.phoneNumber,
         },
         token
       );
-
-      // Update the local state with the edited user details
-      setUsers(
-        users.map((user) => (user._id === selectedUser._id ? editedUser : user))
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === selectedUser._id ? { ...user, ...values } : user
+        )
       );
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error(
-        "Error updating user:",
-        error.response || error.message || error
-      );
-      // Set a timeout to clear the token after 5 minutes (300000 milliseconds)
-      const timeoutId = setTimeout(() => {
-        setError("Failed to update user. Please try again later.");
-      }, 3000);
-
-      // Clear the timeout if the component is unmounted
-      return () => clearTimeout(timeoutId);
+      message.success("User updated successfully");
+      setIsEditModalVisible(false);
+      setSelectedUser(null);
+      form.resetFields();
+    } catch (err) {
+      console.error("Error updating user:", err);
+      message.error("Failed to update user. Please try again later.");
     }
   };
 
-  const handleDeleteConfirm = async () => {
-    try {
-      // Call the deleteUser API with the selected user ID and token
-      await deleteUser(selectedUser, token);
-
-      // Update the local state to remove the deleted user
-      setUsers(users.filter((user) => user._id !== selectedUser._id));
-      setIsDeleteModalOpen(false);
-    } catch (error) {
-      console.error(
-        "Error deleting user:",
-        error.response || error.message || error
-      );
-      const timeoutId = setTimeout(() => {
-        setError("Failed to delete user. Please try again later.");
-      }, 3000);
-      return () => clearTimeout(timeoutId);
-    }
+  const handleEditModalCancel = () => {
+    setIsEditModalVisible(false);
+    setSelectedUser(null);
+    form.resetFields();
   };
 
   const handleDeleteClick = (user) => {
-    setSelectedUser(user);
-    setIsDeleteModalOpen(true);
+    Modal.confirm({
+      title: "Are you sure you want to delete this user?",
+      content: "This action cannot be undone.",
+      okText: "Yes, Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await deleteUser(user, token);
+          setUsers((prevUsers) => prevUsers.filter((u) => u._id !== user._id));
+          message.success("User deleted successfully");
+        } catch (err) {
+          console.error("Error deleting user:", err);
+          message.error("Failed to delete user. Please try again later.");
+        }
+      },
+    });
   };
 
   const handleLoginRedirect = () => {
     history.push("/login");
   };
 
-  return (
-    <div className="user-list-container">
-      {error && <div className="error-message">{error}</div>}
-      {users.length === 0 ? (
-        <div className="empty-message">
-          Dashboard is empty. No data available.
-          <button className="login-btn" onClick={handleLoginRedirect}>
-            Go to Login
-          </button>
+  const columns = [
+    { title: "Username", dataIndex: "username", key: "username" },
+    { title: "Email", dataIndex: "email", key: "email" },
+    { title: "Phone Number", dataIndex: "phoneNumber", key: "phoneNumber" },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (text, record) => (
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => handleEditClick(record)}
+            style={{ width: 80 }}
+          >
+            Edit
+          </Button>
+          <Button
+            type="danger"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteClick(record)}
+            style={{
+              borderColor: "#ff4d4f",
+              width: 80,
+            }}
+          >
+            Delete
+          </Button>
         </div>
-      ) : (
-        <ul className="user-list">
-          {users.map((user) => (
-            <li key={user._id} className="user-card">
-              <div className="user-details">
-                <span className="username">{user.username}</span>
-                <span className="email">{user.email}</span>
-                <span className="phone">{user.phoneNumber}</span>
-              </div>
-              <div className="user-actions">
-                <button
-                  className="edit-btn"
-                  onClick={() => handleEditClick(user)}
-                >
-                  Edit
-                </button>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDeleteClick(user)}
-                >
-                  Delete
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-      <EditModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <h2>Edit User</h2>
-        <form>
-          <input
-            type="text"
-            placeholder="Username"
-            value={editedUser.username}
-            onChange={(e) =>
-              setEditedUser({ ...editedUser, username: e.target.value })
-            }
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={editedUser.email}
-            onChange={(e) =>
-              setEditedUser({ ...editedUser, email: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Phone Number"
-            value={editedUser.phoneNumber}
-            onChange={(e) =>
-              setEditedUser({ ...editedUser, phoneNumber: e.target.value })
-            }
-          />
-          <button type="button" onClick={handleSaveClick}>
-            Save
-          </button>
-        </form>
-      </EditModal>
+      ),
+    },
+  ];
 
-      <DeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onDelete={handleDeleteConfirm}
-      />
-    </div>
+  return (
+    <Layout style={{ minHeight: "100vh", overflow: "hidden" }}>
+      <Header
+        style={{
+          color: "#fff",
+          fontSize: "1.5rem",
+          textAlign: "center",
+          height: "64px",
+          lineHeight: "64px",
+        }}
+      >
+        User Dashboard
+      </Header>
+      <Content className={`dashboard-content ${dataLoaded ? "fade-in" : ""}`}>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        {!dataLoaded ? (
+          <div style={{ textAlign: "center", marginTop: "20%" }}>
+            <Spin size="large" />
+            <p>Loading data...</p>
+          </div>
+        ) : (
+          <Row gutter={[16, 16]}>
+            <Col xs={24}>
+              <Card title="User List">
+                <Table
+                  dataSource={users}
+                  columns={columns}
+                  rowKey="_id"
+                  pagination={{ pageSize: 5 }}
+                  locale={{ emptyText: "No record found" }}
+                />
+              </Card>
+            </Col>
+          </Row>
+        )}
+      </Content>
+      {/* Edit Modal */}
+      <Modal
+        title="Edit User"
+        visible={isEditModalVisible}
+        onOk={handleEditModalOk}
+        onCancel={handleEditModalCancel}
+        okText="Save"
+      >
+        <Spin spinning={!dataLoaded}>
+          <Form form={form} layout="vertical">
+            <Form.Item
+              label="Username"
+              name="username"
+              rules={[{ required: true, message: "Please enter a username" }]}
+            >
+              <Input placeholder="Username" />
+            </Form.Item>
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[
+                { required: true, message: "Please enter an email" },
+                { type: "email", message: "Please enter a valid email" },
+              ]}
+            >
+              <Input placeholder="Email" />
+            </Form.Item>
+            <Form.Item
+              label="Phone Number"
+              name="phoneNumber"
+              rules={[
+                { required: true, message: "Please enter a phone number" },
+              ]}
+            >
+              <Input placeholder="Phone Number" />
+            </Form.Item>
+          </Form>
+        </Spin>
+      </Modal>
+    </Layout>
   );
 };
 
