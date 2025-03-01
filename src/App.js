@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import Customer from "./pages/Customers";
 import Orders from "./pages/Orders";
 import SideMenu from "./components/Sidemenu";
+import PrivateRoute from "./components/PrivateRoute"; // Import PrivateRoute
 import "./styles/index.css";
 import "./styles/App.css"; // Importing CSS file for global styles
 
@@ -63,10 +64,10 @@ const AppRoutes = () => {
       <div className="SideMenuAndPageContent">
         <SideMenu />
         <Switch>
-          <Route exact path="/dashboard" component={Dashboard} />
-          <Route path="/inventory" component={Inventory} />
-          <Route path="/orders" component={Orders} />
-          <Route path="/customers" component={Customer} />
+          <PrivateRoute exact path="/dashboard" component={Dashboard} />
+          <PrivateRoute path="/inventory" component={Inventory} />
+          <PrivateRoute path="/orders" component={Orders} />
+          <PrivateRoute path="/customers" component={Customer} />
           <Route path="/signup" component={SignUp} />
         </Switch>
       </div>

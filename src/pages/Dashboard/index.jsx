@@ -109,12 +109,16 @@ const RecentOrders = () => {
       </Typography.Text>
       <Table
         columns={[
-          { title: "Title", dataIndex: "title" },
-          { title: "Quantity", dataIndex: "quantity" },
-          { title: "Price", dataIndex: "discountedPrice" },
+          { title: "Title", dataIndex: "title", key: "title" },
+          { title: "Quantity", dataIndex: "quantity", key: "quantity" },
+          {
+            title: "Price",
+            dataIndex: "discountedPrice",
+            key: "discountedPrice",
+          },
         ]}
         loading={loading}
-        dataSource={dataSource}
+        dataSource={dataSource.map((item, index) => ({ ...item, key: index }))}
         pagination={false}
       />
     </>
@@ -136,7 +140,7 @@ const DashboardChart = () => {
           datasets: [
             {
               label: "Revenue",
-              data: data,
+              data,
               backgroundColor: "rgba(255, 0, 0, 1)",
             },
           ],
@@ -158,7 +162,7 @@ const DashboardChart = () => {
   return (
     <Card style={{ width: "100%", minHeight: "400px" }}>
       {loading ? (
-        <Spin tip="Loading Chart..." />
+        <Spin />
       ) : (
         <div style={{ position: "relative", width: "100%", height: "400px" }}>
           <Bar options={options} data={revenueData} />
@@ -168,7 +172,7 @@ const DashboardChart = () => {
   );
 };
 
-// UserList component
+// UserList component remains as-is (unchanged)
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -191,7 +195,6 @@ const UserList = () => {
         const data = await getAllUsers(token);
         setUsers(data);
         setDataLoaded(true);
-        // Set a timeout to simulate session expiry if needed
         const timeoutId = setTimeout(() => {
           setError("Session expired. Please log in again.");
           history.push("/login");
@@ -314,7 +317,7 @@ const UserList = () => {
           <Row gutter={[16, 16]}>
             <Col xs={24}>
               <Table
-                dataSource={users}
+                dataSource={users.map((user) => ({ ...user, key: user._id }))}
                 columns={columns}
                 rowKey="_id"
                 pagination={{ pageSize: 5 }}
@@ -367,117 +370,158 @@ const UserList = () => {
 };
 
 // DashboardPage wraps the Dashboard in a scrolling layout with custom scrollbar styles.
-const DashboardPage = () => (
-  <ConfigProvider
-    theme={{
-      components: {
-        Layout: {
-          bodyBg: "#fff",
+const DashboardPage = () => {
+  const [counts, setCounts] = useState({
+    orders: 0,
+    inventory: 0,
+    revenue: 0,
+    customers: 0,
+  });
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const [customersRes, ordersRes, inventoryRes, revenueRes] =
+          await Promise.all([
+            getCustomers(),
+            getOrders(),
+            getInventory(),
+            getRevenue(),
+          ]);
+        setCounts({
+          customers: customersRes.total || 0,
+          orders:
+            ordersRes.totalProducts ||
+            (ordersRes.products && ordersRes.products.length) ||
+            0,
+          inventory: inventoryRes.total || 0,
+          revenue: revenueRes.total || 0,
+        });
+      } catch (err) {
+        console.error("Error fetching counts: ", err);
+      }
+    };
+    fetchCounts();
+  }, []);
+
+  // Extract common style objects for reuse.
+  const outerContentStyle = {
+    padding: "24px",
+    margin: 0,
+    overflowY: "auto",
+    height: "100vh",
+    position: "relative",
+  };
+
+  const innerContentStyle = {
+    padding: "20px",
+    overflowY: "auto",
+  };
+
+  return (
+    <ConfigProvider
+      theme={{
+        components: {
+          Layout: {
+            bodyBg: "#fff",
+          },
         },
-      },
-    }}
-  >
-    <style>{scrollbarStyles}</style>
-    <Layout style={{ minHeight: "100vh", overflow: "hidden" }}>
-      <Layout>
-        <Content
-          style={{
-            padding: "24px",
-            margin: 0,
-            overflowY: "auto",
-            height: "100vh",
-            position: "relative",
-          }}
-        >
-          <Content style={{ padding: "20px", overflowY: "auto" }}>
-            <Space size={20} direction="vertical" style={{ width: "100%" }}>
-              <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12} md={6}>
-                  <DashboardCard
-                    icon={
-                      <ShoppingCartOutlined
-                        style={{
-                          color: "green",
-                          backgroundColor: "rgba(0,255,0,0.25)",
-                          borderRadius: 20,
-                          fontSize: 24,
-                          padding: 8,
-                        }}
-                      />
-                    }
-                    title={"Orders"}
-                    value={getOrders()?.total || 0}
-                  />
-                </Col>
-                <Col xs={24} sm={12} md={6}>
-                  <DashboardCard
-                    icon={
-                      <ShoppingOutlined
-                        style={{
-                          color: "blue",
-                          backgroundColor: "rgba(0,0,255,0.25)",
-                          borderRadius: 20,
-                          fontSize: 24,
-                          padding: 8,
-                        }}
-                      />
-                    }
-                    title={"Inventory"}
-                    value={getInventory()?.total || 0}
-                  />
-                </Col>
-                <Col xs={24} sm={12} md={6}>
-                  <DashboardCard
-                    icon={
-                      <UserOutlined
-                        style={{
-                          color: "purple",
-                          backgroundColor: "rgba(0,255,255,0.25)",
-                          borderRadius: 20,
-                          fontSize: 24,
-                          padding: 8,
-                        }}
-                      />
-                    }
-                    title={"Customer"}
-                    value={getCustomers()?.total || 0}
-                  />
-                </Col>
-                <Col xs={24} sm={12} md={6}>
-                  <DashboardCard
-                    icon={
-                      <DollarCircleOutlined
-                        style={{
-                          color: "red",
-                          backgroundColor: "rgba(255,0,0,0.25)",
-                          borderRadius: 20,
-                          fontSize: 24,
-                          padding: 8,
-                        }}
-                      />
-                    }
-                    title={"Revenue"}
-                    value={getOrders()?.discountedTotal || 0}
-                  />
-                </Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col xs={24}>
-                  <DashboardChart />
-                </Col>
-                <Col xs={24} lg={12}>
-                  <RecentOrders />
-                </Col>
-                <Col xs={24} lg={12}>
-                  <UserList />
-                </Col>
-              </Row>
-            </Space>
+      }}
+    >
+      <style>{scrollbarStyles}</style>
+      <Layout style={{ minHeight: "100vh", overflow: "hidden" }}>
+        <Layout>
+          <Content style={outerContentStyle}>
+            <Content style={innerContentStyle}>
+              <Space size={20} direction="vertical" style={{ width: "100%" }}>
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} sm={12} md={6}>
+                    <DashboardCard
+                      icon={
+                        <ShoppingCartOutlined
+                          style={{
+                            color: "green",
+                            backgroundColor: "rgba(0,255,0,0.25)",
+                            borderRadius: 20,
+                            fontSize: 24,
+                            padding: 8,
+                          }}
+                        />
+                      }
+                      title={"Orders"}
+                      value={counts.orders}
+                    />
+                  </Col>
+                  <Col xs={24} sm={12} md={6}>
+                    <DashboardCard
+                      icon={
+                        <ShoppingOutlined
+                          style={{
+                            color: "blue",
+                            backgroundColor: "rgba(0,0,255,0.25)",
+                            borderRadius: 20,
+                            fontSize: 24,
+                            padding: 8,
+                          }}
+                        />
+                      }
+                      title={"Inventory"}
+                      value={counts.inventory}
+                    />
+                  </Col>
+                  <Col xs={24} sm={12} md={6}>
+                    <DashboardCard
+                      icon={
+                        <UserOutlined
+                          style={{
+                            color: "purple",
+                            backgroundColor: "rgba(0,255,255,0.25)",
+                            borderRadius: 20,
+                            fontSize: 24,
+                            padding: 8,
+                          }}
+                        />
+                      }
+                      title={"Customer"}
+                      value={counts.customers}
+                    />
+                  </Col>
+                  <Col xs={24} sm={12} md={6}>
+                    <DashboardCard
+                      icon={
+                        <DollarCircleOutlined
+                          style={{
+                            color: "red",
+                            backgroundColor: "rgba(255,0,0,0.25)",
+                            borderRadius: 20,
+                            fontSize: 24,
+                            padding: 8,
+                          }}
+                        />
+                      }
+                      title={"Revenue"}
+                      value={counts.revenue}
+                    />
+                  </Col>
+                </Row>
+                <Row gutter={[16, 16]}>
+                  <Col xs={24}>
+                    <DashboardChart />
+                  </Col>
+                  <Col xs={24} lg={12}>
+                    <RecentOrders />
+                  </Col>
+                  <Col xs={24} lg={12}>
+                    <UserList />
+                  </Col>
+                </Row>
+              </Space>
+            </Content>
           </Content>
-        </Content>
+        </Layout>
       </Layout>
-    </Layout>
-  </ConfigProvider>
-);
+    </ConfigProvider>
+  );
+};
 
 export default DashboardPage;

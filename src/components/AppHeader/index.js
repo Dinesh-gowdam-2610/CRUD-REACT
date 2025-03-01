@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import { BellFilled, MailOutlined } from "@ant-design/icons";
 import {
   Badge,
@@ -9,35 +10,39 @@ import {
   Avatar,
   Dropdown,
   Menu,
+  Spin,
+  Row,
+  Col,
 } from "antd";
-import { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { getComments, getOrders } from "../../services/publicApi";
+import "../../styles/appHeader.css"; // External CSS for additional styling
 
 function AppHeader() {
   const [comments, setComments] = useState([]);
   const [orders, setOrders] = useState([]);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-
+  const [loading, setLoading] = useState(true);
   const history = useHistory();
 
   useEffect(() => {
-    getComments().then((res) => {
-      setComments(res.comments);
-    });
-    getOrders().then((res) => {
-      setOrders(res.products);
-    });
+    const fetchData = async () => {
+      setLoading(true);
+      const commentsRes = await getComments();
+      const ordersRes = await getOrders();
+      setComments(commentsRes.comments);
+      setOrders(ordersRes.products);
+      setLoading(false);
+    };
+    fetchData();
   }, []);
 
   const handleProfileClick = () => {
-    // Navigate to the profile page
     history.push("/profile");
   };
 
   const handleLogoutClick = () => {
-    // Redirect to login page on logout
     history.push("/login");
   };
 
@@ -53,61 +58,85 @@ function AppHeader() {
   );
 
   return (
-    <div className="AppHeader">
-      <Image
-        width={40}
-        // src="https://yt3.ggpht.com/ytc/AMLnZu83ghQ28n1SqADR-RbI2BGYTrqqThAtJbfv9jcq=s176-c-k-c0x00ffffff-no-rj"
-      />
-      <Typography.Title>Kibana Dashboard</Typography.Title>
-      <Space>
-        <Badge count={comments.length} dot>
-          <MailOutlined
-            style={{ fontSize: 24 }}
-            onClick={() => setCommentsOpen(true)}
-          />
-        </Badge>
-        <Badge count={orders.length}>
-          <BellFilled
-            style={{ fontSize: 24 }}
-            onClick={() => setNotificationsOpen(true)}
-          />
-        </Badge>
-        <Dropdown overlay={avatarMenu} trigger={["click"]}>
-          <Avatar
-            style={{ cursor: "pointer" }}
-            src="https://www.gravatar.com/avatar/?d=mp"
-            alt="User Avatar"
-          />
-        </Dropdown>
-      </Space>
+    <header className="app-header">
+      <Row align="middle" justify="space-between">
+        {/* Left side: Dashboard Title */}
+        <Col>
+          <Typography.Title level={4} className="header-title">
+            My Dashboard
+          </Typography.Title>
+        </Col>
+        {/* Right side: Image and Icons */}
+        <Col>
+          <Space className="header-actions" size="middle">
+            <Image width={40} />
+            <Badge count={comments.length} dot>
+              <MailOutlined
+                className="header-icon"
+                style={{ fontSize: 24 }}
+                onClick={() => setCommentsOpen(true)}
+              />
+            </Badge>
+            <Badge count={orders.length}>
+              <BellFilled
+                className="header-icon"
+                style={{ fontSize: 24 }}
+                onClick={() => setNotificationsOpen(true)}
+              />
+            </Badge>
+            <Dropdown overlay={avatarMenu} trigger={["click"]}>
+              <Avatar
+                className="header-avatar"
+                style={{ cursor: "pointer" }}
+                src="https://www.gravatar.com/avatar/?d=mp"
+                alt="User Avatar"
+              />
+            </Dropdown>
+          </Space>
+        </Col>
+      </Row>
+      {/* Comments Drawer */}
       <Drawer
         title="Comments"
         open={commentsOpen}
         onClose={() => setCommentsOpen(false)}
         maskClosable
       >
-        <List
-          dataSource={comments}
-          renderItem={(item) => <List.Item>{item.body}</List.Item>}
-        />
+        {loading ? (
+          <Spin>
+            <div style={{ height: "100px" }} />
+          </Spin>
+        ) : (
+          <List
+            dataSource={comments}
+            renderItem={(item) => <List.Item>{item.body}</List.Item>}
+          />
+        )}
       </Drawer>
+      {/* Notifications Drawer */}
       <Drawer
         title="Notifications"
         open={notificationsOpen}
         onClose={() => setNotificationsOpen(false)}
         maskClosable
       >
-        <List
-          dataSource={orders}
-          renderItem={(item) => (
-            <List.Item>
-              <Typography.Text strong>{item.title}</Typography.Text> has been
-              ordered!
-            </List.Item>
-          )}
-        />
+        {loading ? (
+          <Spin>
+            <div style={{ height: "100px" }} />
+          </Spin>
+        ) : (
+          <List
+            dataSource={orders}
+            renderItem={(item) => (
+              <List.Item>
+                <Typography.Text strong>{item.title}</Typography.Text> has been
+                ordered!
+              </List.Item>
+            )}
+          />
+        )}
       </Drawer>
-    </div>
+    </header>
   );
 }
 

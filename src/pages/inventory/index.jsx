@@ -1,5 +1,5 @@
-import { Avatar, Rate, Space, Table, Typography } from "antd";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Avatar, Rate, Table } from "antd";
 import { getInventory } from "../../services/publicApi";
 
 function Inventory() {
@@ -9,23 +9,30 @@ function Inventory() {
   useEffect(() => {
     setLoading(true);
     getInventory().then((res) => {
-      setDataSource(res.products);
+      setDataSource(
+        res.products.map((product) => ({ ...product, key: product.id }))
+      );
       setLoading(false);
     });
   }, []);
 
   return (
-    <Space size={20} direction="vertical">
-      <Typography.Title level={4}>Inventory</Typography.Title>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh", // Full viewport height
+        overflow: "hidden",
+      }}
+    >
       <Table
         loading={loading}
+        style={{ width: "100%" }}
         columns={[
           {
             title: "Thumbnail",
             dataIndex: "thumbnail",
-            render: (link) => {
-              return <Avatar src={link} />;
-            },
+            render: (link) => <Avatar src={link} />,
           },
           {
             title: "Title",
@@ -39,15 +46,12 @@ function Inventory() {
           {
             title: "Rating",
             dataIndex: "rating",
-            render: (rating) => {
-              return <Rate value={rating} allowHalf disabled />;
-            },
+            render: (rating) => <Rate value={rating} allowHalf disabled />,
           },
           {
             title: "Stock",
             dataIndex: "stock",
           },
-
           {
             title: "Brand",
             dataIndex: "brand",
@@ -58,11 +62,11 @@ function Inventory() {
           },
         ]}
         dataSource={dataSource}
-        pagination={{
-          pageSize: 5,
-        }}
-      ></Table>
-    </Space>
+        pagination={{ pageSize: 9 }} // Display 8 records per page
+        scroll={{ y: "calc(100vh - 250px)" }}
+      />
+    </div>
   );
 }
+
 export default Inventory;

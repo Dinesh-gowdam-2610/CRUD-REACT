@@ -118,9 +118,9 @@ const UserList = () => {
     });
   };
 
-  const handleLoginRedirect = () => {
-    history.push("/login");
-  };
+  // const handleLoginRedirect = () => {
+  //   history.push("/login");
+  // };
 
   const columns = [
     { title: "Username", dataIndex: "username", key: "username" },

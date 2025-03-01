@@ -1,0 +1,24 @@
+.inventory-container {
+  width: 100%;
+  height: 100vh; /* Full height */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.ant-table-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.ant-table {
+  width: 100%;
+  height: 100%;
+}
+
+.ant-table-body {
+  height: calc(100vh - 200px); /* Adjust height based on your layout */
+  overflow-y: auto;
+}
